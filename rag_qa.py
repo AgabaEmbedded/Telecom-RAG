@@ -1,17 +1,21 @@
 """
-Research Paper QA RAG System
+Research Paper QA RAG System (Modernized)
 Retrieval-Augmented Generation for answering questions about research papers
+Using LangChain Expression Language (LCEL) and latest patterns
 """
 
 import os
 import logging
 from dotenv import load_dotenv
 from typing import List, Dict
+from operator import itemgetter
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_pinecone import PineconeVectorStore
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+from langchain_core.documents import Document
 from pinecone import Pinecone
 
 # Configure logging
@@ -78,32 +82,43 @@ def initialize_vector_store(embeddings):
     return vectorstore
 
 
-def create_qa_prompt():
-    """Create custom prompt template for QA"""
+def format_docs(docs: List[Document]) -> str:
+    """Format retrieved documents into a single context string"""
+    formatted = []
+    for i, doc in enumerate(docs, 1):
+        source = doc.metadata.get('source_file', 'Unknown')
+        page = doc.metadata.get('page', 'Unknown')
+        content = doc.page_content
+        formatted.append(
+            f"[Source {i}: {source}, Page {page}]\n{content}\n"
+        )
+    return "\n".join(formatted)
+
+
+def create_rag_prompt():
+    """Create modern chat prompt template for RAG"""
     template = """You are an expert research assistant analyzing academic papers. 
-Use the following pieces of context from research papers to answer the question at the end.
+Use the following pieces of context from research papers to answer the question.
 
 If you don't know the answer based on the provided context, just say that you don't know. 
 Don't try to make up an answer.
 
-Always cite the source document(s) in your answer when possible.
+Always cite the source document(s) and page numbers in your answer when possible.
 
-Context:
+Context from research papers:
 {context}
 
 Question: {question}
 
-Detailed Answer:"""
+Provide a detailed, well-structured answer based on the context above:"""
 
-    return PromptTemplate(
-        template=template,
-        input_variables=["context", "question"]
-    )
+    prompt = ChatPromptTemplate.from_template(template)
+    return prompt
 
 
 def create_rag_chain(vectorstore, llm):
-    """Create the RAG retrieval chain"""
-    logger.info("Creating RAG chain...")
+    """Create modern RAG chain using LCEL (LangChain Expression Language)"""
+    logger.info("Creating RAG chain with LCEL...")
     
     # Create retriever from vector store
     retriever = vectorstore.as_retriever(
@@ -111,43 +126,51 @@ def create_rag_chain(vectorstore, llm):
         search_kwargs={"k": TOP_K_RESULTS}
     )
     
-    # Create custom prompt
-    prompt = create_qa_prompt()
+    # Create prompt
+    prompt = create_rag_prompt()
     
-    # Create retrieval QA chain
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",  # 'stuff' passes all docs to LLM at once
-        retriever=retriever,
-        return_source_documents=True,
-        chain_type_kwargs={"prompt": prompt}
+    # Build RAG chain using LCEL
+    rag_chain = (
+        RunnableParallel(
+            context=itemgetter("question") | retriever | format_docs,
+            question=itemgetter("question")
+        )
+        | prompt
+        | llm
+        | StrOutputParser()
     )
     
     logger.info("RAG chain created successfully")
-    return qa_chain
+    return rag_chain, retriever
 
 
-def format_sources(source_documents: List) -> str:
+def format_sources(source_documents: List[Document]) -> str:
     """Format source documents for display"""
     sources = []
+    seen = set()  # Avoid duplicate sources
+    
     for i, doc in enumerate(source_documents, 1):
         source_file = doc.metadata.get('source_file', 'Unknown')
         page = doc.metadata.get('page', 'Unknown')
-        sources.append(f"[{i}] {source_file} (Page {page})")
+        source_key = f"{source_file}_{page}"
+        
+        if source_key not in seen:
+            sources.append(f"[{len(sources) + 1}] {source_file} (Page {page})")
+            seen.add(source_key)
     
-    return "\n".join(sources)
+    return "\n\n".join(sources) if sources else "No sources available"
 
 
-def ask_question(qa_chain, question: str) -> Dict:
-    """Ask a question and get answer with sources"""
+def ask_question(rag_chain, retriever, question: str) -> Dict:
+    """Ask a question and get answer with sources using modern LCEL chain"""
     logger.info(f"Processing question: {question}")
     
     try:
-        # Run the chain
-        result = qa_chain.invoke({"query": question})
+        # Retrieve source documents separately for display
+        source_docs = retriever.invoke(question)
         
-        answer = result["result"]
-        source_docs = result["source_documents"]
+        # Run the RAG chain
+        answer = rag_chain.invoke({"question": question})
         
         logger.info("Answer generated successfully")
         
@@ -162,11 +185,11 @@ def ask_question(qa_chain, question: str) -> Dict:
         return {
             "answer": f"Error: {str(e)}",
             "sources": [],
-            "formatted_sources": ""
+            "formatted_sources": "Error retrieving sources"
         }
 
 
-def interactive_qa_loop(qa_chain):
+def interactive_qa_loop(rag_chain, retriever):
     """Interactive question-answering loop"""
     print("\n" + "=" * 60)
     print("Research Paper QA System - Interactive Mode")
@@ -187,7 +210,7 @@ def interactive_qa_loop(qa_chain):
         
         print("\n⏳ Searching and generating answer...\n")
         
-        result = ask_question(qa_chain, question)
+        result = ask_question(rag_chain, retriever, question)
         
         print("-" * 60)
         print("📝 ANSWER:")
@@ -215,35 +238,33 @@ def main():
     # Step 3: Initialize vector store
     vectorstore = initialize_vector_store(embeddings)
     
-    # Step 4: Create RAG chain
-    qa_chain = create_rag_chain(vectorstore, llm)
+    # Step 4: Create RAG chain (returns chain and retriever)
+    rag_chain, retriever = create_rag_chain(vectorstore, llm)
     
     logger.info("System ready!")
     
     # Step 5: Start interactive QA
-    interactive_qa_loop(qa_chain)
+    interactive_qa_loop(rag_chain, retriever)
 
-
-def single_question_mode(question: str):
-    """Process a single question (for scripting)"""
-    logger.info("Running in single question mode")
+def get_response(rag_chain, retriever, question: str) -> str:
+    """Ask a question and get answer with sources using modern LCEL chain"""
+    logger.info(f"Processing question: {question}")
     
-    embeddings = initialize_embeddings()
-    llm = initialize_llm()
-    vectorstore = initialize_vector_store(embeddings)
-    qa_chain = create_rag_chain(vectorstore, llm)
+    try:
+        # Retrieve source documents separately for display
+        source_docs = retriever.invoke(question)
+        
+        # Run the RAG chain
+        answer = rag_chain.invoke({"question": question})
+        
+        logger.info("Answer generated successfully")
+        
+        return answer+"\n\n"+ format_sources(source_docs)
     
-    result = ask_question(qa_chain, question)
     
-    print("\n" + "=" * 60)
-    print("ANSWER:")
-    print("=" * 60)
-    print(result["answer"])
-    print("\n" + "=" * 60)
-    print("SOURCES:")
-    print("=" * 60)
-    print(result["formatted_sources"])
-    print("=" * 60 + "\n")
+    except Exception as e:
+        logger.error(f"Error processing question: {e}")
+        return f"Error: {str(e)}"+"\n\n"+ "Error retrieving sources"
 
 
 if __name__ == "__main__":
