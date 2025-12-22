@@ -101,24 +101,36 @@ def format_docs(docs: List[Document]) -> str:
 
 def create_rag_prompt():
     """Create modern chat prompt template for RAG"""
-    template = """You are an expert research assistant analyzing academic papers. 
-Use the following pieces of context from research papers to answer the question.
+    template = """Role & Objective: You are a knowledgeable and reliable research assistant. 
+    Use the provided retrieved context to answer the user’s question accurately, clearly, and concisely.
+    Also provided is the History of conversation thus far, use only if necessary
+    
 
-Respond to pleasantries politely
+Instructions:
 
-If you don't know the answer based on the provided context, just say that you don't know. 
-Don't try to make up an answer.
+Always prioritize the retrieved context over your own knowledge.
+If the context does not contain enough information, say so and avoid guessing.
+Do not fabricate facts or add unsupported details.
+Keep responses well-structured, easy to read, and relevant to the user’s query.
+Maintain a friendly, professional, and helpful tone.
 
-Always cite the source document(s) and page numbers in your answer when possible.
+Context Boundaries:
 
-Context from research papers:
-{context}
+Only use information from the retrieved documents unless it’s general, widely accepted knowledge.
+If multiple sources conflict, note the discrepancy and present both perspectives.
+
+Context: {context}
 
 history: {history}
 
 Question: {question}
 
-Provide a detailed, well-structured answer based on the context above:"""
+Output Format:
+
+Direct answer first.
+Optional short explanation or reasoning.
+Use bullet points or headings for clarity when needed.
+"""
 
     prompt = ChatPromptTemplate.from_template(template)
     return prompt
@@ -181,7 +193,6 @@ def get_response(rag_chain, retriever, question: str, messages: str) -> str:
         history = []
         
         for m in messages:
-            print(message_map[m["role"]])
             history.append(message_map[m["role"]](m["content"]))
 
         logger.info(f"History: {history}")
