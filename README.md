@@ -1,5 +1,20 @@
 # Telecom Research Papers Q&A RAG System
 
+<a href="https://telecom-rag.streamlit.app/" target="_blank">
+  <button style="
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #2ea44f;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;">
+    🚀 Launch App
+  </button>
+</a>
+
+
 A modern **Retrieval-Augmented Generation (RAG)** application that enables question-answering over a collection of telecom-related research papers stored as PDFs.
 
 The system:
@@ -28,7 +43,7 @@ Built with best practices: LangChain Expression Language (LCEL), proper metadata
 ├── ingest_papers.py          # Ingestion script: PDFs → Pinecone
 ├── rag_qa.py                 # Core RAG logic (retriever, chain, prompt)
 ├── app.py                    # Streamlit frontend
-├── .env.example              # Example environment variables
+├── requirements.txt          # Requirements for the application
 └── papers/                   # Directory for your PDF research papers
 ```
 
@@ -54,20 +69,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-(If no `requirements.txt` exists yet, create one with:)
-
-```txt
-streamlit
-langchain
-langchain-community
-langchain-pinecone
-langchain-google-genai
-pinecone-client
-python-dotenv
-PyPDF2
-tqdm
-```
-
 ### 4. Set up environment variables
 
 Copy the example and fill in your keys:
@@ -83,6 +84,7 @@ PINECONE_API_KEY=your_pinecone_api_key
 GOOGLE_API_KEY=your_google_ai_studio_or_vertex_key
 PINECONE_INDEX_NAME=telecom-papers
 PINECONE_ENVIRONMENT=us-east-1  # or your preferred region
+PDF_FOLDER = ./papers   #directory to the papers folder
 ```
 
 > Get keys from:
@@ -98,7 +100,7 @@ Place all your telecom research PDFs in a folder (e.g., `./papers/`).
 Run the ingestion script:
 
 ```bash
-python ingest_papers.py ./papers
+python ingest_papers.py
 ```
 
 This will:

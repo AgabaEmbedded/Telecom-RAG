@@ -31,6 +31,7 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "research-papers")
 PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
+PDF_FOLDER = os.getenv("PDF_FOLDER", "./papers")
 
 # Chunking parameters
 CHUNK_SIZE = 1000
@@ -207,12 +208,4 @@ def main(pdf_directory: str):
 
 
 if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) < 2:
-        print("Usage: python ingest_papers.py <pdf_directory>")
-        print("Example: python ingest_papers.py ./papers")
-        sys.exit(1)
-    
-    pdf_dir = sys.argv[1]
-    main(pdf_dir)
+    main(PDF_FOLDER)
