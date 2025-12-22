@@ -1,7 +1,20 @@
-from rag_qa import initialize_embeddings, initialize_llm, initialize_vector_store, create_rag_chain, get_response
+
 
 import time
+import logging
 import streamlit as st
+
+from rag_qa import (initialize_embeddings, 
+                    initialize_llm, 
+                    initialize_vector_store, 
+                    create_rag_chain, 
+                    get_response)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 st.title("Telecom Q&A RAG")
 
@@ -17,23 +30,19 @@ vectorstore = initialize_vector_store(embeddings)
 # Step 4: Create RAG chain (returns chain and retriever)
 rag_chain, retriever = create_rag_chain(vectorstore, llm)
 
-print(1)
+
 def response_generator(response):
     
     for word in response.split():
         yield word + " "
         time.sleep(0.05)
-import time
+
 
 def character_stream_generator(response):
     """Streams the response character by character."""
     for char in response:
         yield char
-        # A much smaller sleep time is needed for smooth character-level stream
         time.sleep(0.01) 
-
-# Example usage in Streamlit:
-# st.write_stream(character_stream_generator("This is **bold** text.\nAnd a new line."))
 
 
 # Initialize chat history
@@ -44,6 +53,12 @@ if "messages" not in st.session_state:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+history = ""
+
+#for m in st.session_state.messages[:4]:
+#    history+=f"{m['role']}: {m['content']}\n"
+
+#logger.info(f"history: {history}")
 
 # Accept user input
 if prompt := st.chat_input("What is up?"):
@@ -55,10 +70,8 @@ if prompt := st.chat_input("What is up?"):
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
-        response = get_response(rag_chain, retriever, prompt)
+        response = get_response(rag_chain, retriever, prompt, st.session_state.messages[:4])
+        logger.info(repr(response))
         response = st.write_stream(character_stream_generator(response))
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response})
-        
-#if __name__ == "__main__":
-#    main()
