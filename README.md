@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Telecom Research Papers Q&A RAG System
 
 <a href="https://telecom-rag.streamlit.app/" target="_blank">
@@ -152,3 +153,6 @@ MIT
 
 Built with ❤️ using LangChain, Google Gemini, Pinecone, and Streamlit.  
 Perfect for researchers, students, or engineers diving deep into telecom literature!
+=======
+# Telecom-RAG
+>>>>>>> 854b3888b4c030fe0678ce4b73bedb92da7d104d
