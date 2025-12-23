@@ -1,19 +1,11 @@
-<<<<<<< HEAD
 # Telecom Research Papers Q&A RAG System
 
-<a href="https://telecom-rag.streamlit.app/" target="_blank">
-  <button style="
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: white;
-    background-color: #2ea44f;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;">
-    🚀 Launch App
-  </button>
-</a>
+<p align="center">
+  <a href="https://telecom-rag.streamlit.app/">
+    <img src="Demo.png" width="200" />
+  </a>
+</p>
+
 
 
 A modern **Retrieval-Augmented Generation (RAG)** application that enables question-answering over a collection of telecom-related research papers stored as PDFs.
@@ -153,6 +145,3 @@ MIT
 
 Built with ❤️ using LangChain, Google Gemini, Pinecone, and Streamlit.  
 Perfect for researchers, students, or engineers diving deep into telecom literature!
-=======
-# Telecom-RAG
->>>>>>> 854b3888b4c030fe0678ce4b73bedb92da7d104d
