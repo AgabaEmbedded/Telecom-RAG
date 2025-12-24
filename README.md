@@ -1,4 +1,10 @@
 # Telecom Research Papers Q&A RAG System
+![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![LangChain](https://img.shields.io/badge/LangChain-0.1+-green.svg?style=flat&logo=langchain)
+![Google Gemini](https://img.shields.io/badge/Google%20Gemini-1.5%20Flash-blue.svg?style=flat&logo=google)
+![Pinecone](https://img.shields.io/badge/Pinecone-Vector%20DB-green.svg?style=flat&logo=pinecone)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-red.svg?style=flat&logo=streamlit)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 <p align="center">
   <a href="https://telecom-rag.streamlit.app/">
