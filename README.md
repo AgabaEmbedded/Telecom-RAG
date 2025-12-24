@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://telecom-rag.streamlit.app/">
-    <img src="Demo.png" width="200" />
+    <img src="Demo.png" width="100" />
   </a>
 </p>
 
@@ -113,17 +113,12 @@ streamlit run app.py
 Open your browser to `http://localhost:8501`
 
 Ask questions like:
-- "What are the key findings on 6G channel modeling?"
-- "Compare beamforming techniques in mmWave papers."
-- "Summarize latency improvements in recent O-RAN papers."
+- "What are the major facilities upgrade for 5G?"
+- "Summarize latency improvements in recent O-RAN"
+- "What are the challenges of URLLC in 5G NR?"
+- "Discuss massive MIMO implementations"
 
 Answers will include **source citations** at the bottom.
-
-## Example Questions
-
-- What challenges are mentioned regarding URLLC in 5G NR?
-- How do the papers discuss massive MIMO implementations?
-- Explain the differences between split options in O-RAN architecture.
 
 ## Customization Tips
 
