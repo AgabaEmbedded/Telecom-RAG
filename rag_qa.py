@@ -38,7 +38,7 @@ PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "telecoms-papers")
 
 # Retrieval parameters
 TOP_K_RESULTS = 5
-RELEVANCE_THRESHOLD = 0.78
+RELEVANCE_THRESHOLD = 0.90
 
 
 def initialize_embeddings():
