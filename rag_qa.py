@@ -34,7 +34,7 @@ load_dotenv()
 # Configuration
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "research-papers")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "telecoms-papers")
 
 # Retrieval parameters
 TOP_K_RESULTS = 5
@@ -58,7 +58,7 @@ def initialize_llm():
     logger.info("Initializing Gemini 2.5 Flash LLM...")
     
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash-lite",  # Latest Gemini Flash model
+        model="gemini-2.5-flash",  # Latest Gemini Flash model
         google_api_key=GOOGLE_API_KEY,
         temperature=0.3,
         convert_system_message_to_human=True
@@ -117,7 +117,7 @@ Maintain a friendly, professional, and helpful tone.
 Context Boundaries:
 
 Only use information from the retrieved documents unless it’s general, widely accepted knowledge.
-If multiple sources conflict, note the discrepancy and present both perspectives.
+Only use use context that is relevant to the question asked.
 
 Context: {context}
 
